@@ -1,6 +1,3 @@
-# routeros-cnip-cidr
-china ip list
-
 # RouterOS CN IP List
 
 CN ip list script generator for MikroTik RouterOS
