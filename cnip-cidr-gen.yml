@@ -1,0 +1,54 @@
+name: cnip-cidr-gen
+on:
+  schedule:
+    - cron: '0 12 */2 * *'  # 每2天执行一次
+  workflow_dispatch:      # 支持手动触发测试
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          path: ${{ github.workspace }}/routeros-cnip-cidr
+          fetch-depth: 0
+
+      - name: Update cn_ip_cidr.rsc
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |-
+          bash $GITHUB_WORKSPACE/routeros-cnip-cidr/generator.bash
+
+      # 核心优化：删除RouterOS IPv6兼容性判断行，带调试日志
+      - name: Remove IPv6 package check line
+        run: |-
+          cd $GITHUB_WORKSPACE/routeros-cnip-cidr/
+          FILE_PATH="dist/cn_ip_cidr.rsc"
+
+          # ========== 调试：执行删除前检索目标行 ==========
+          echo "[DEBUG] 开始检索目标代码行"
+          grep -n "system package find where name=\"ipv6\"" "$FILE_PATH" || echo "[DEBUG] 未检索到目标行"
+
+          # ========== 核心命令：宽松匹配删除，规避空格/转义问题 ==========
+          # 匹配包含核心特征的行，强制删除，不依赖完整字符匹配
+          sed -i '/system package find where name="ipv6"/d' "$FILE_PATH"
+
+          # ========== 调试：执行删除后二次验证 ==========
+          echo "[DEBUG] 删除完成，二次校验结果"
+          grep -n "system package find where name=\"ipv6\"" "$FILE_PATH" || echo "[SUCCESS] 目标代码行已彻底删除"
+
+          # 预览文件头部，确认格式正常
+          echo "[DEBUG] 脚本文件前20行预览："
+          head -20 "$FILE_PATH"
+
+      - name: Commit and push if changed
+        run: |-
+          cd $GITHUB_WORKSPACE/routeros-cnip-cidr/
+          git diff
+          git config --global user.email "action_bot@rookiezoe.com"
+          git config --global user.name "ActionBot"
+          git add -A
+          # 提交信息标注更新类型，无变更则正常退出
+          git commit -m "Auto update IP list + remove IPv6 check line [hourly]" || exit 0
+          git push
