@@ -1,8 +1,4 @@
-# RouterOS CN IP List
-
-CN ip list script generator for MikroTik RouterOS
-
-[![status](https://img.shields.io/github/workflow/status/exp4sky/routeros-cnip-cidr/cnip-cidr-gen?color=34d058&label=cnip-cidr-gen&logo=github&logoColor=fff)](https://github.com/exp4sky/routeros-cnip-cidr/actions/workflows/cnip-cidr-gen.yml)
+## RouterOS CN IP List
 
 ## To use
 
