@@ -5948,3 +5948,7 @@
 :do {add address=2c0f:f7a8:8211::/48 list=cn_ip_cidr} on-error={}
 :do {add address=2c0f:f7a8:9041::/48 list=cn_ip_cidr} on-error={}
 }
+/log info "Import cn ipv6 cidr list..."
+/ipv6 firewall address-list remove [/ipv6 firewall address-list find list=cn_ip_cidr]
+/ipv6 firewall address-list
+}
